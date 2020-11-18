@@ -1,3 +1,11 @@
 # web-scraping-tool
-Short programming project University of Groningen
-First a txt file must exist in the current working directoy, run main.py to create directory, then run google.py
+---
+Short programming project University of Groningen.
+
+Important libraries to be installed:
+- selenium
+- request
+- webdriver_manager
+- urllib
+- Pillow
+- request
