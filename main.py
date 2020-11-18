@@ -1,4 +1,5 @@
 import os
+from google_scraper import google_scrape
 
 def main():
     #read the txt file and put them to a list
@@ -19,6 +20,9 @@ def makeDirectories(keywords, website):
             os.makedirs("{}/database/".format(cwd))
         if not os.path.isdir("{}/database/{}/{}".format(cwd, website, keyword)):
             os.makedirs("{}/database/{}/{}".format(cwd, website, keyword))
+        if not os.path.isdir("{}/database/{}/log".format(cwd, website)):
+            os.makedirs("{}/database/{}/log".format(cwd, website))
+    google_scrape('cat', 30)
 
 if __name__ == "__main__":
     main()
