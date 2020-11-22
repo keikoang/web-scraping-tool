@@ -50,7 +50,6 @@ def get_image_urls(keyword):
     browser.close()
     return image_urls
 
-#TO DO fix the image count somehow it doesnt work, and also print line dynamically
 def download_images(image_urls, keyword, descriptor_path, downloaded_images, image_number):
     keyword_path = "{}/database/google/{}".format(os.getcwd(), keyword)
 
