@@ -9,20 +9,23 @@ def main():
 
     #make the directories for each keyword
     makeDirectories(keywords, 'google')
+    image_number = int(input("Enter number of images to be downloaded per keyword: "))
+    for keyword in keywords:
+        google_scrape(keyword, image_number)
 
 #make folders based on the keywords and the website users use
 def makeDirectories(keywords, website):
-    #cwd = current working directory
+    #cwd = current working directory, make database directory if it doesnt exist
     cwd = os.getcwd()
-    #make the directories if they dont exist
+    if not os.path.isdir("{}/database/".format(cwd)):
+        os.makedirs("{}/database/".format(cwd))
+    if not os.path.isdir("{}/database/{}/log".format(cwd, website)):
+        os.makedirs("{}/database/{}/log".format(cwd, website))
+
+    #make the directories for each keyword
     for keyword in keywords:
-        if not os.path.isdir("{}/database/".format(cwd)):
-            os.makedirs("{}/database/".format(cwd))
         if not os.path.isdir("{}/database/{}/{}".format(cwd, website, keyword)):
             os.makedirs("{}/database/{}/{}".format(cwd, website, keyword))
-        if not os.path.isdir("{}/database/{}/log".format(cwd, website)):
-            os.makedirs("{}/database/{}/log".format(cwd, website))
-    google_scrape('cat', 30)
 
 if __name__ == "__main__":
     main()
