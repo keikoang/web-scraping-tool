@@ -9,7 +9,7 @@ def main():
 
     #make the directories for each keyword
     makeDirectories(keywords, 'google')
-    image_number = int(input("Enter number of images to be downloaded per keyword: "))
+    image_number = int(input("Enter maximum number of images to be downloaded per keyword: "))
     for keyword in keywords:
         google_scrape(keyword, image_number)
 
@@ -24,6 +24,9 @@ def makeDirectories(keywords, website):
 
     #make the directories for each keyword
     for keyword in keywords:
+        #handle keyword that has space in it
+        if " " in keyword:
+            keyword = "_".join(keyword.split())
         if not os.path.isdir("{}/database/{}/{}".format(cwd, website, keyword)):
             os.makedirs("{}/database/{}/{}".format(cwd, website, keyword))
 
