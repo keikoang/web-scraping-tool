@@ -94,13 +94,18 @@ def download_images(image_number, log_path, parsed_keyword, descriptor_path, dow
             img_link = split_line[2]
             try:
                 urllib.request.urlretrieve(img_link, os.path.join(keyword_path, img_name))
+                sys.stdout.write("\rDownloaded image: {}".format(image_counter))
+                sys.stdout.flush()
+                time.sleep(0.2)
             except:
                 continue  # continue to next image if failed to download it
             with open(descriptor_path, 'a', newline='') as f:
                 writer = csv.writer(f)
                 writer.writerow([split_line[0], split_line[1], split_line[3], split_line[4]])
             image_counter += 1
-    print("Downloaded {} image(s)".format(image_counter))
+    sys.stdout.write("\rDownloaded image: {}".format(image_counter))
+    sys.stdout.flush()
+    print("\n")
 
 def google_scrape(keyword, image_number):
     if " " in keyword:
