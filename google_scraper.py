@@ -1,108 +1,142 @@
-import time
-import os
-import requests
+import sys
 import csv
+import os
+import time
+import urllib
+
+from bs4 import BeautifulSoup as bs
 from selenium import webdriver
-from webdriver_manager.chrome import ChromeDriverManager #the library is webdriver-manager
-from urllib.parse import urlparse
-from PIL import Image
+from selenium.webdriver.support.wait import WebDriverWait
+from webdriver_manager.chrome import ChromeDriverManager  # the library is webdriver-manager
+from selenium.webdriver.support import expected_conditions
+from selenium.webdriver.common.by import By
 
-def get_image_urls(keyword, image_number, image_urls):
-    #get the chrome browser to open headless
-    #options = webdriver.ChromeOptions()
-    #options.headless = True
-    browser = webdriver.Chrome(ChromeDriverManager().install())
 
-    #this url provides images that are not copyright
-    url = "https://www.google.com/search?q=%s&source=lnms&tbm=isch&sa=X&ved=2ahUKEwie44_AnqLpAhUhBWMBHUFGD90Q_AUoAXoECBUQAw&biw=1920&bih=947"%(keyword)
+# this function click the button on the website
+def click_button(browser, xpath):
+    try:
+        w = WebDriverWait(browser, 0.5)
+        elem = w.until(expected_conditions.element_to_be_clickable((By.XPATH, xpath)))
+        elem.click()
+    except:
+        pass  # does nothing
+
+
+# this function parse the page
+def parse_page(keyword):
+    # get the chrome browser to open headless
+    options = webdriver.ChromeOptions()
+    options.headless = True
+    browser = webdriver.Chrome(ChromeDriverManager().install(), options=options)
+
+    # get the webpage of the url
+    url = "https://www.google.com/search?q=%s&source=lnms&tbm=isch&sa=X&ved=2ahUKEwie44_AnqLpAhUhBWMBHUFGD90Q_AUoAXoECBUQAw&biw=1920&bih=947" % (
+        keyword)
     browser.get(url)
-    time.sleep(2)
+    time.sleep(1)
+    browser.maximize_window()
 
-    image_count = 1
-    #image_number*2 here, so the program could anticipate for images that are not in preferred extension
-    # and also anticipate for images that the program couldn't get the link for
-    for i in range (1, image_number * 2):
-        #if the number fof images found satisfies the requirement, simply quit
-        if len(image_urls) == image_number:
-            break
-        try:
-            imgurl = browser.find_element_by_xpath('//*[@id="islrg"]/div[1]/div[%s]/a[1]/div[1]/img' % (str(i)))
-            imgurl.click()
-            time.sleep(0.7)
-            images = browser.find_elements_by_class_name("n3VNCb")
-            for image in images:
-                #download images with jpg/png/jpeg extensions
-                if (image.get_attribute("src")[-3:].lower() in ["jpg", "png", "jpeg", "gif", "svg"]):
-                    print("%d. %s" % (image_count, image.get_attribute("src")))
-                    image_urls.append(image.get_attribute("src"))
-                    image_count += 1
-                    break
-            #scroll to load more image
-            browser.execute_script("window.scrollTo(0, " + str(i * 150) + ");")
-            time.sleep(0.6)
-        except Exception as e:
-            print("Unable to get the link for this image")
+    print("--- Scrolling down the page for {} ---".format(keyword))
+    # scroll down the page and click the show more button
+    page_counter = 0
+    scroll_height = .1
+    while scroll_height < 9.9:
+        sys.stdout.write("\rScrolled page: {}".format(page_counter))
+        sys.stdout.flush()
+        if page_counter < 10:
+            click_button(browser, '//input[@type="button"]')
+        browser.execute_script("window.scrollTo(0, document.body.scrollHeight/%s);" % scroll_height)
+        scroll_height += .03
+        time.sleep(0.3)
+        page_counter += 1
+    print("\n")
 
+    page = browser.page_source
+    html = bs(page, "html.parser")
+    image_boxes = html.find_all("img", {"class": "rg_i Q4LuWd"})
     browser.close()
-    return image_urls
+    return image_boxes
 
-def download_images(images_url, keyword, descriptor_path):
-    keyword_path = "{}/database/google/{}".format(os.getcwd(), keyword)
 
-    for i, image_url in enumerate(images_url):
-        try:
-            image_name = keyword+str(i)+'.jpg'
-            image_path = os.path.join(keyword_path, image_name)
-            image = requests.get(image_url)
-            #status code 200 means the image is succesfully downloaded
-            if image.status_code == 200:
-                with open(image_path, 'wb') as f:
-                    f.write(image.content)
-                with open(descriptor_path, 'a', newline='') as file:
-                    writer = csv.writer(file)
-                    writer.writerow([str(i)]+get_metadata(image_url, image_path))
-        #if it doesnt work, try another images
-        except:
-            print("Unable to download image "+ str(i))
-            pass
+# this function save the images information on a file
+def save_images(image_boxes, keyword, log_path):
+    print("--- Saving {} images information---".format(keyword))
+    image_count = 0
+    for image in image_boxes:
+        src = image.get("data-src" or "src")
+        if src is not None:
+            try:
+                img_caption = image.get("alt")
+                img_width = str(image.get("width"))
+                img_height = str(image.get("height"))
+                with open(log_path, "a") as file:
+                    file.write("{},{},{},{},{}\n".format(str(image_count), img_caption, src, img_width, img_height))
+            except:
+                continue  # continue to next image in image boxes
+            image_count += 1
+    print("Saved {} {} image(s)\n".format(image_count, keyword))
 
-#this function returns a row of related data of an image
-def get_metadata(image_url, image_path):
-    parsed = urlparse(image_url)
-    file_base = os.path.basename(parsed[2]) #show the path from the website
-    file_name = os.path.splitext(file_base)[0] #get the name of the image
-    file_extension = os.path.splitext(file_base)[1] #get the extensions of the image
-    website = parsed[1] #show network location
-    image = Image.open(image_path)
-    image_width = image.size[0]
-    image_height = image.size[1]
-    return [file_name, image_width, image_height, website, file_extension]
+
+# this function download images from the link in the information file
+def download_images(image_number, log_path, parsed_keyword, descriptor_path, downloaded_images):
+    print("--- Downloading {} images ---".format(parsed_keyword))
+    keyword_path = "{}/database/google/{}".format(os.getcwd(), parsed_keyword)
+    image_counter = 0
+    with open(log_path, "r") as file:
+        for line in file:
+            split_line = line.strip().split(',')
+            index = int(split_line[0])
+            if index < downloaded_images + 1:  # skip the downloaded images
+                continue
+            if index == image_number + downloaded_images + 1:  # break if already downloaded the required num of images
+                break
+            img_name = parsed_keyword + "_" + str(index) + ".jpg"
+            img_link = split_line[2]
+            try:
+                urllib.request.urlretrieve(img_link, os.path.join(keyword_path, img_name))
+                sys.stdout.write("\rDownloaded image: {}".format(image_counter))
+                sys.stdout.flush()
+                time.sleep(0.2)
+            except:
+                continue  # continue to next image if failed to download it
+            with open(descriptor_path, 'a', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow([split_line[0], split_line[1], split_line[3], split_line[4]])
+            image_counter += 1
+    sys.stdout.write("\rDownloaded image: {}".format(image_counter))
+    sys.stdout.flush()
+    print("\n")
 
 def google_scrape(keyword, image_number):
-    #specify the path for both log and descriptors
-    log_name = "google_log_"+keyword+".txt"
+    if " " in keyword:
+        parsed_keyword = "_".join(keyword.split())
+    else:
+        parsed_keyword = keyword
+    # specify the path for both log and descriptors
     log_folder = "{}/database/google/log".format(os.getcwd())
+    log_name = "google_log_" + parsed_keyword + ".txt"
+    d_log_name = "google_d_log_" + parsed_keyword + ".txt"
     log_path = os.path.join(log_folder, log_name)
+    d_log_path = os.path.join(log_folder, d_log_name)
 
-    keyword_path = "{}/database/google/{}".format(os.getcwd(), keyword)
+    keyword_path = "{}/database/google/{}".format(os.getcwd(), parsed_keyword)
     descriptor_name = 'google_' + keyword + '_descriptor.csv'
     descriptor_path = os.path.join(keyword_path, descriptor_name)
 
-    #if the user already downloaded some images before, we can see on the log
-    if os.path.isfile(log_path):
-        with open(log_path, "r") as file:
-            file_lines = file.read()
-            image_urls = file_lines.split("\n")
-    #if the user download images for the first time
-    else:
-        image_urls = []
+    downloaded_images = 0
+    # if the user download images for the first time
+    if not os.path.isfile(log_path):
+        image_boxes = parse_page(keyword)
+        save_images(image_boxes, keyword, log_path)
         with open(descriptor_path, 'w', newline='') as file:
             writer = csv.writer(file)
-            writer.writerow(["Index", "Name", "Image Width", "Image height", "Website", "Extension"])
+            writer.writerow(["Index", "Image Caption", "Image Width", "Image height"])
+        with open(d_log_path, 'w') as f:
+            f.write("{}".format(str(0)))
+    else:
+        with open(d_log_path, 'r') as f:
+            downloaded_images = int(f.read())
 
-    #write the obtained urls to a file
-    image_urls = get_image_urls(keyword, image_number, image_urls),
-    with open(log_path, "w") as file:
-        urls_in_lines = "\n".join(image_urls)
-        file.write(urls_in_lines)
-    download_images(image_urls, keyword, descriptor_path)
+    download_images(image_number, log_path, parsed_keyword, descriptor_path, downloaded_images)
+    with open(d_log_path, 'w') as f:
+        f.write("{}".format(str(image_number + downloaded_images)))
