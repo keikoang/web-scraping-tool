@@ -1,5 +1,5 @@
 import os
-from google_scraper import google_scrape
+from google_scraper import Google_Scraper
 
 def main():
     #read the txt file and put them to a list
@@ -9,9 +9,10 @@ def main():
 
     #make the directories for each keyword
     makeDirectories(keywords, 'google')
-    image_number = int(input("Enter maximum number of images to be downloaded per keyword: "))
+    image_number = int(input("Enter number of images to be downloaded per keyword: "))
     for keyword in keywords:
-        google_scrape(keyword, image_number)
+        google_scraper = Google_Scraper(keyword, image_number)
+        google_scraper.google_scrape()
 
 #make folders based on the keywords and the website users use
 def makeDirectories(keywords, website):
