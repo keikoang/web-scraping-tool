@@ -1,5 +1,6 @@
 from instaloader import Instaloader, Post
 from instaloader.__main__ import filterstr_to_filterfunc
+from instaloader.instaloader import _ArbitraryItemFormatter, _PostPathFormatter
 import os
 import time
 
@@ -17,14 +18,23 @@ class Instagram_Scraper():
         count = 0
         #set the directory name the same as the hashtag
         loader.dirname_pattern = "database/instagram/{}".format(hashtag)
+        caption_folder = "database/instagram/{}/captions".format(hashtag)
 
         print("--- Downloading post(s) with {} hashtag ---".format(hashtag))
         for post in loader.get_hashtag_posts(hashtag):
             if count > self.image_number - 1:
                 break
+            #if only download videos
+            if (not loader.download_pictures) and loader.download_videos:
+                if not post.is_video:
+                    continue
             downloaded = loader.download_post(post, hashtag)
-            print(downloaded)
-            if downloaded:  # if the post is succesfully downloaded
+            if downloaded:  # if the post is succesfully downloaded, download the caption
+                metadata_string = _ArbitraryItemFormatter(post).format('{caption}').strip()
+                dirname = _PostPathFormatter(post).format(caption_folder, hashtag)
+                filename = os.path.join(dirname, loader.format_filename(post, hashtag))
+                os.makedirs(os.path.dirname(filename), exist_ok=True)
+                loader.save_caption(filename=filename, mtime=post.date_local, caption=metadata_string)
                 count += 1
             time.sleep(1)  # give some time to minimize getting banned from instagram
 
@@ -40,6 +50,7 @@ class Instagram_Scraper():
         #glue the two hashtags together and set the directory name the same as joined hashtag
         joined_hashtags = '_'.join(two_hashtags)
         loader.dirname_pattern = "database/instagram/{}".format(joined_hashtags)
+        caption_folder = "database/instagram/{}/captions".format(joined_hashtags)
         #set the second hashtag as the filter
         filter = filterstr_to_filterfunc("'{}' in caption_hashtags".format(two_hashtags[1]), Post)
 
@@ -47,9 +58,18 @@ class Instagram_Scraper():
         for post in loader.get_hashtag_posts(two_hashtags[0]):
             if count > self.image_number - 1:
                 break
+            # if only download videos
+            if (not loader.download_pictures) and loader.download_videos:
+                if not post.is_video:
+                    continue
             if filter(post):
                 downloaded = loader.download_post(post, joined_hashtags)
-                if downloaded:  # if the post is succesfully downloaded
+                if downloaded:  # if the post is succesfully downloaded, download the caption
+                    metadata_string = _ArbitraryItemFormatter(post).format('{caption}').strip()
+                    dirname = _PostPathFormatter(post).format(caption_folder, joined_hashtags)
+                    filename = os.path.join(dirname, loader.format_filename(post, joined_hashtags))
+                    os.makedirs(os.path.dirname(filename), exist_ok=True)
+                    loader.save_caption(filename=filename, mtime=post.date_local, caption=metadata_string)
                     count += 1
             time.sleep(1)
 
@@ -61,17 +81,17 @@ class Instagram_Scraper():
             loader = Instaloader(
                 sleep=True, quiet=False, filename_pattern='{date}', download_pictures=True,
                 download_videos=False, download_video_thumbnails=True, download_geotags=False,
-                download_comments=False, save_metadata=False, post_metadata_txt_pattern='{caption}')
+                download_comments=False, save_metadata=False, post_metadata_txt_pattern='')
         elif download_option == '2':
             loader = Instaloader(
                 sleep=True, quiet=False, filename_pattern='{date}', download_pictures=False,
                 download_videos=True, download_video_thumbnails=False, download_geotags=False,
-                download_comments=False, save_metadata=False, post_metadata_txt_pattern='{caption}')
+                download_comments=False, save_metadata=False, post_metadata_txt_pattern='')
         elif download_option == '3':
             loader = Instaloader(
                 sleep=True, quiet=False, filename_pattern='{date}', download_pictures=True,
                 download_videos=True, download_video_thumbnails=False, download_geotags=False,
-                download_comments=False, save_metadata=False, post_metadata_txt_pattern='{caption}')
+                download_comments=False, save_metadata=False, post_metadata_txt_pattern='')
         # login to a premade account to minimize chance of getting banned from instagram
         loader.login('webscrapingtool.rug', 'w3bscr4p1ng')
 
