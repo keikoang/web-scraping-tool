@@ -16,16 +16,23 @@ class Google_Scraper():
         self.keyword = keyword
         parsed_keyword = keyword
         if " " in keyword:
-            parsed_keyword = "_".join(keyword.split())
+            parsed_keyword = "".join(keyword.split())
         self.parsed_keyword = parsed_keyword
         self.image_number = image_number
 
+        #make the directory for log and keyword if they dont exist
+        cwd = os.getcwd()
+        if not os.path.isdir("{}/database/google/google_log".format(cwd)):
+            os.makedirs("{}/database/google/google_log".format(cwd))
+        if not os.path.isdir("{}/database/google/{}".format(cwd, parsed_keyword)):
+            os.makedirs("{}/database/google/{}".format(cwd, parsed_keyword))
+
         # specify the path for both log and descriptors
-        log_folder = "{}/database/google/log".format(os.getcwd())
+        log_folder = "{}/database/google/google_log".format(os.getcwd())
         keyword_folder = "{}/database/google/{}".format(os.getcwd(), parsed_keyword)
         log_name = "google_log_" + parsed_keyword + ".txt"
         d_log_name = "google_d_log_" + parsed_keyword + ".txt"
-        descriptor_name = 'google_' + keyword + '_descriptor.csv'
+        descriptor_name = 'google_' + parsed_keyword + '_descriptor.csv'
         self.log_path = os.path.join(log_folder, log_name)
         self.d_log_path = os.path.join(log_folder, d_log_name)
         self.descriptor_path = os.path.join(keyword_folder, descriptor_name)
