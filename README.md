@@ -2,10 +2,4 @@
 ---
 Short programming project University of Groningen.
 
-Important libraries to be installed:
-- selenium
-- request
-- webdriver_manager
-- urllib
-- Pillow
-- request
+`SPP_Web_Scraping_User_Guide_V1.pdf` is provided to guide user for installation
