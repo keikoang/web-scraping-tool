@@ -1,5 +1,2 @@
-red flower
-cute cat
+cat
 dog
-flower
-car

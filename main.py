@@ -10,8 +10,12 @@ def main():
 
     if not os.path.isdir("{}/database/".format(os.getcwd())):
         os.makedirs("{}/database/".format(os.getcwd()))
-    website = input("Enter (1) for Google or (2) for instagram: ")
-    image_number = int(input("Enter number of post(s) to be downloaded per keyword: "))
+    print("(1) Google")
+    print("(2) Instagram")
+    website = input("Enter 1 or 2: ")
+    print("")
+    image_number = int(input("Enter number of contents to be downloaded: "))
+    print("")
     if website == '1': #google
         for keyword in keywords:
             google_scraper = Google_Scraper(keyword, image_number)

@@ -74,28 +74,35 @@ class Instagram_Scraper():
             time.sleep(1)
 
     def instagram_scraper(self):
-        download_option = input("(1) Image only (2) Video only (3) Both Image and video: ")
+        print("(1) Image only")
+        print("(2) Video only")
+        print("(3) Both Image and video")
+        download_option = input("Enter 1, 2, or 3: ")
+        print("")
         # initialize the instaloader instance
         loader = None
         if download_option == '1':
             loader = Instaloader(
-                sleep=True, quiet=False, filename_pattern='{date}', download_pictures=True,
+                sleep=True, quiet=False, filename_pattern='{profile}_{date}', download_pictures=True,
                 download_videos=False, download_video_thumbnails=True, download_geotags=False,
                 download_comments=False, save_metadata=False, post_metadata_txt_pattern='')
         elif download_option == '2':
             loader = Instaloader(
-                sleep=True, quiet=False, filename_pattern='{date}', download_pictures=False,
+                sleep=True, quiet=False, filename_pattern='{profile}_{date}', download_pictures=False,
                 download_videos=True, download_video_thumbnails=False, download_geotags=False,
                 download_comments=False, save_metadata=False, post_metadata_txt_pattern='')
         elif download_option == '3':
             loader = Instaloader(
-                sleep=True, quiet=False, filename_pattern='{date}', download_pictures=True,
+                sleep=True, quiet=False, filename_pattern='{profile}_{date}', download_pictures=True,
                 download_videos=True, download_video_thumbnails=False, download_geotags=False,
                 download_comments=False, save_metadata=False, post_metadata_txt_pattern='')
         # login to a premade account to minimize chance of getting banned from instagram
         loader.login('webscrapingtool.rug', 'w3bscr4p1ng')
 
-        hashtag_option = input("Enter (1) to download with one hashtag or (2) to download with two hashtag: ")
+        print("(1) Download with one hashtag")
+        print("(2) Download with two hashtag")
+        hashtag_option = input("Enter 1 or 2: ")
+        print("")
         if hashtag_option == '1':
             for hashtag in self.hashtags:
                 parsed_hashtag = hashtag
