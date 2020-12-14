@@ -14,7 +14,7 @@ def main():
     print("(2) Instagram")
     website = input("Enter 1 or 2: ")
     print("")
-    image_number = int(input("Enter number of contents to be downloaded: "))
+    image_number = int(input("Enter number of samples to be downloaded: "))
     print("")
     if website == '1': #google
         for keyword in keywords:
