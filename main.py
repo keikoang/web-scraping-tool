@@ -1,6 +1,7 @@
 import os
 from google_scraper import Google_Scraper
 from instagram_scraper import Instagram_Scraper
+from twitter_scraper import Twitter_Scraper
 
 def main():
     #read the txt file and put them to a list
@@ -12,17 +13,22 @@ def main():
         os.makedirs("{}/database/".format(os.getcwd()))
     print("(1) Google")
     print("(2) Instagram")
-    website = input("Enter 1 or 2: ")
+    print("(3) Twitter")
+    website = input("Enter 1, 2 or 3: ")
     print("")
-    image_number = int(input("Enter number of samples to be downloaded: "))
+    sample_number = int(input("Enter number of samples to be downloaded: "))
     print("")
-    if website == '1': #google
+    if website == '1':
         for keyword in keywords:
-            google_scraper = Google_Scraper(keyword, image_number)
+            google_scraper = Google_Scraper(keyword, sample_number)
             google_scraper.google_scrape()
     elif website == '2':
-        instagram_scraper = Instagram_Scraper(keywords, image_number)
+        instagram_scraper = Instagram_Scraper(keywords, sample_number)
         instagram_scraper.instagram_scraper()
+    elif website == '3':
+        for keyword in keywords:
+            tp = Twitter_Scraper(keyword, sample_number)
+            tp.twitter_scraper()
 
 if __name__ == "__main__":
     main()
