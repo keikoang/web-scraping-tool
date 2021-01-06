@@ -25,9 +25,8 @@ def main():
         instagram_scraper = Instagram_Scraper(keywords, sample_number)
         instagram_scraper.instagram_scraper()
     elif website == '3':
-        for keyword in keywords:
-            tp = Twitter_Scraper(keyword, sample_number)
-            tp.twitter_scraper()
+        tp = Twitter_Scraper(keywords, sample_number)
+        tp.twitter_scraper()
 
 if __name__ == "__main__":
     main()

@@ -10,8 +10,8 @@ from datetime import datetime, date
 # Access Token Secret : CisUExnCCq5CTQ5XUWuLYIt3NCn36rgrjsfYio6TtPSMk
 
 class Twitter_Scraper():
-    def __init__(self, keyword_or_userid, image_number):
-        self.keyword_or_userid = keyword_or_userid
+    def __init__(self, keywords_or_usernames, image_number):
+        self.keywords_or_usernames = keywords_or_usernames
         self.image_number = image_number
 
         self.since = None
@@ -42,9 +42,10 @@ class Twitter_Scraper():
 
 
     #this function search for tweets based on a keyword and downloads their contents
-    def download_tweets_from_keyword(self, keyword_path, media_path):
+    def download_tweets_from_keyword(self, keyword, keyword_path, media_path):
         tweet_counter = 0
-        tweets = tweepy.Cursor(self.api.search,q=self.keyword_or_userid+" -filter:retweets").items()
+        tweets = tweepy.Cursor(self.api.search,q=keyword+" -filter:retweets").items()
+        print("--- Downloading tweets with {} keyword".format(keyword))
         for tweet in tweets:
             if tweet_counter == self.image_number:
                 break
@@ -91,10 +92,11 @@ class Twitter_Scraper():
 
     # this function get tweets from a certain user. make sure to include in classes.txt the username, for example
     # @billieeilish (with the @), as twitter username is unique, and NOT the display name
-    def download_tweets_from_user(self, keyword_path, media_path):
+    def download_tweets_from_user(self, user, keyword_path, media_path):
         tweet_counter = 0
+        print("--- Downloading tweets from {} ---".format(user))
         for tweet in tweepy.Cursor(self.api.user_timeline,
-                                   screen_name=self.keyword_or_userid,
+                                   screen_name=user,
                                    include_rts=False,
                                    tweet_mode='extended').items():
             if tweet_counter == self.image_number:
@@ -144,18 +146,21 @@ class Twitter_Scraper():
         #ask the user if they wants to download based on keywords or download tweets from users
         print("(1) Download tweets based on keyword(s)\n(2) Download tweets from user(s)")
         choice = input("Enter 1 or 2: ")
+        print("")
 
         cwd = os.getcwd()
         #split the folders to keywords and users
         if choice == '1':
-            if not os.path.isdir("{}/database/twitter/keywords/{}/media".format(cwd, self.keyword_or_userid)):
-                os.makedirs("{}/database/twitter/keywords/{}/media".format(cwd, self.keyword_or_userid))
-            keyword_path = "{}/database/twitter/keywords/{}".format(cwd, self.keyword_or_userid)
-            media_path = "{}/database/twitter/keywords/{}/media".format(cwd, self.keyword_or_userid)
-            self.download_tweets_from_keyword(keyword_path, media_path)
+            for keyword in self.keywords_or_usernames:
+                if not os.path.isdir("{}/database/twitter/keywords/{}/media".format(cwd, keyword)):
+                    os.makedirs("{}/database/twitter/keywords/{}/media".format(cwd, keyword))
+                keyword_path = "{}/database/twitter/keywords/{}".format(cwd, keyword)
+                media_path = "{}/database/twitter/keywords/{}/media".format(cwd, keyword)
+                self.download_tweets_from_keyword(keyword, keyword_path, media_path)
         elif choice == '2':
-            if not os.path.isdir("{}/database/twitter/users/{}/media".format(cwd, self.keyword_or_userid)):
-                os.makedirs("{}/database/twitter/users/{}/media".format(cwd, self.keyword_or_userid))
-            keyword_path = "{}/database/twitter/users/{}".format(cwd, self.keyword_or_userid)
-            media_path = "{}/database/twitter/users/{}/media".format(cwd, self.keyword_or_userid)
-            self.download_tweets_from_user(keyword_path, media_path)
+            for user in self.keywords_or_usernames:
+                if not os.path.isdir("{}/database/twitter/users/{}/media".format(cwd, user)):
+                    os.makedirs("{}/database/twitter/users/{}/media".format(cwd, user))
+                keyword_path = "{}/database/twitter/users/{}".format(cwd, user)
+                media_path = "{}/database/twitter/users/{}/media".format(cwd, user)
+                self.download_tweets_from_user(user, keyword_path, media_path)
