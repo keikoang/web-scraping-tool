@@ -144,11 +144,11 @@ class Instagram_Scraper():
 
     def instagram_scraper(self):
         print("(1) Download posts based on hashtag(s)\n(2) Download posts from user(s)")
-        choice = input("Enter 1 or 2: ")
+        choice = input("Enter (1) or (2): ")
         print("")
 
         print("(1) Image only\n(2) Video only\n(3) Both Image and video")
-        download_option = input("Enter 1, 2, or 3: ")
+        download_option = input("Enter (1), (2), or (3): ")
         print("")
 
         # initialize the instaloader instance
@@ -174,7 +174,7 @@ class Instagram_Scraper():
 
         if choice == '1':
             print("(1) Download with one hashtag\n(2) Download with two hashtag")
-            hashtag_option = input("Enter 1 or 2: ")
+            hashtag_option = input("Enter (1) or (2): ")
             print("")
             if hashtag_option == '1':
                 for hashtag in self.hashtags_or_users:

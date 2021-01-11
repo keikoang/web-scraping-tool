@@ -91,7 +91,7 @@ class Twitter_Scraper():
 
 
     # this function get tweets from a certain user. make sure to include in classes.txt the username, for example
-    # @billieeilish (with the @), as twitter username is unique, and NOT the display name
+    # billieeilish, as twitter username is unique, and NOT the display name
     def download_tweets_from_user(self, user, keyword_path, media_path):
         tweet_counter = 0
         print("--- Downloading tweets from {} ---".format(user))
@@ -145,7 +145,7 @@ class Twitter_Scraper():
     def twitter_scraper(self):
         #ask the user if they wants to download based on keywords or download tweets from users
         print("(1) Download tweets based on keyword(s)\n(2) Download tweets from user(s)")
-        choice = input("Enter 1 or 2: ")
+        choice = input("Enter (1) or (2): ")
         print("")
 
         cwd = os.getcwd()
@@ -156,7 +156,7 @@ class Twitter_Scraper():
                     os.makedirs("{}/database/twitter/keywords/{}/media".format(cwd, keyword))
                 keyword_path = "{}/database/twitter/keywords/{}".format(cwd, keyword)
                 media_path = "{}/database/twitter/keywords/{}/media".format(cwd, keyword)
-                self.download_tweets_from_keyword(keyword, keyword_path, media_path)
+                self.download_tweets_from_keyword('@'+keyword, keyword_path, media_path)
         elif choice == '2':
             for user in self.keywords_or_usernames:
                 if not os.path.isdir("{}/database/twitter/users/{}/media".format(cwd, user)):
