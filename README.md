@@ -11,4 +11,4 @@ A tool to scrape contents from Google Image, Instagram, and Twitter.
 - Twitter: tweets(the text) and image if it exist in the tweet.
 
 ### Installation
-`SPP_Web_Scraping_User_Guide_V1.pdf` is provided to guide user for installing and operating this tool.
+`SPP_Web_Scraping_User_Guide_V1.pdf` is provided to guide user for installing and operating this tool (inside docs).
