@@ -1,7 +1,7 @@
 import os
-from google_scraper import Google_Scraper
-from instagram_scraper import Instagram_Scraper
-from twitter_scraper import Twitter_Scraper
+from scraper.google_scraper import Google_Scraper
+from scraper.instagram_scraper import Instagram_Scraper
+from scraper.twitter_scraper import Twitter_Scraper
 
 def main():
     #read the txt file and put them to a list
@@ -12,7 +12,7 @@ def main():
     if not os.path.isdir("{}/database/".format(os.getcwd())):
         os.makedirs("{}/database/".format(os.getcwd()))
     print("(1) Google\n(2) Instagram\n(3) Twitter")
-    website = input("Enter (1), (2), or 3: ")
+    website = input("Enter (1), (2), or (3): ")
     print("")
     sample_number = int(input("Enter number of samples to be downloaded: "))
     print("")
