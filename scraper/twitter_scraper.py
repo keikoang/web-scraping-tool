@@ -10,29 +10,9 @@ from datetime import datetime, date
 # Access Token Secret : CisUExnCCq5CTQ5XUWuLYIt3NCn36rgrjsfYio6TtPSMk
 
 class Twitter_Scraper():
-    def __init__(self, keywords_or_usernames, image_number):
+    def __init__(self, keywords_or_usernames, tweet_number):
         self.keywords_or_usernames = keywords_or_usernames
-        self.image_number = image_number
-
-        self.since = None
-        self.until = None
-        # ask user if they want to download posts in certain time period
-        print("Download posts in certain time period?\n(1) Yes\n(2) No")
-        option = input("Enter (1) or (2): ")
-        print("")
-
-        # if user wants to download in certain time period, ask the user the dates
-        # if the user doesnt want to download posts in certain time, just download normally
-        if option == '1':
-            since_year = int(input("Since year: "))
-            since_month = int(input("Since month: "))
-            since_day = int(input("Since day: "))
-            until_year = int(input("Until year: "))
-            until_month = int(input("Until month: "))
-            until_day = int(input("Until day: "))
-            print("")
-            self.since = datetime(since_year, since_month, since_day)
-            self.until = datetime(until_year, until_month, until_day)
+        self.tweet_number = tweet_number
 
         #setting up the the twitter API
         auth = tweepy.OAuthHandler("JjSSCoFSbnQh97VDe95DBYEQd", "3ssHOGHiO51BrrNS09IzGt95Y0ZY5kn1cvDX3DOJ7fcWlfafTK")
@@ -47,12 +27,8 @@ class Twitter_Scraper():
         tweets = tweepy.Cursor(self.api.search,q=keyword+" -filter:retweets").items()
         print("--- Downloading tweets with {} keyword".format(keyword))
         for tweet in tweets:
-            if tweet_counter == self.image_number:
+            if tweet_counter == self.tweet_number:
                 break
-
-            if self.since is not None and self.until is not None:
-                if not (tweet.created_at > self.since and tweet.created_at < self.until):
-                    continue
 
             # specify the file name and path. if the tweet was already scraped, ignore it
             #the file is named according to the tweet id and today's date
@@ -89,21 +65,48 @@ class Twitter_Scraper():
                     image_index += 1
             tweet_counter += 1
 
+        print("Downloaded tweets: {}/{}".format(tweet_counter, self.tweet_number))
+        if tweet_counter < self.tweet_number:
+            print("You have downloaded all tweets with {} keyword.".format(keyword))
+            print("No more tweets with {} keyword are available to be downloaded.".format(keyword))
+            print("Try downloading again later when more tweets are available.")
+
 
     # this function get tweets from a certain user. make sure to include in classes.txt the username, for example
     # billieeilish, as twitter username is unique, and NOT the display name
     def download_tweets_from_user(self, user, keyword_path, media_path):
         tweet_counter = 0
+        since = None
+        until = None
+
+        # ask user if they want to download posts in certain time period
+        print("Download posts in certain time period?\n(1) Yes\n(2) No")
+        option = input("Enter (1) or (2): ")
+        print("")
+
+        # if user wants to download in certain time period, ask the user the dates
+        # if the user doesnt want to download posts in certain time, just download normally
+        if option == '1':
+            since_year = int(input("Since year: "))
+            since_month = int(input("Since month: "))
+            since_day = int(input("Since day: "))
+            until_year = int(input("Until year: "))
+            until_month = int(input("Until month: "))
+            until_day = int(input("Until day: "))
+            print("")
+            since = datetime(since_year, since_month, since_day)
+            until = datetime(until_year, until_month, until_day)
+
         print("--- Downloading tweets from {} ---".format(user))
         for tweet in tweepy.Cursor(self.api.user_timeline,
                                    screen_name=user,
                                    include_rts=False,
                                    tweet_mode='extended').items():
-            if tweet_counter == self.image_number:
+            if tweet_counter == self.tweet_number:
                 break
 
-            if self.since is not None and self.until is not None:
-                if not (tweet.created_at > self.since and tweet.created_at < self.until):
+            if since is not None and until is not None:
+                if not (tweet.created_at > since and tweet.created_at < until):
                     continue
 
             # specify the file name and path. if the tweet was already scraped, ignore it
@@ -138,8 +141,16 @@ class Twitter_Scraper():
                         except Exception as e:
                             continue
                     image_index += 1
-
             tweet_counter += 1
+
+        print("Downloaded tweets: {}/{}".format(tweet_counter, self.tweet_number))
+        if tweet_counter < self.tweet_number:
+            print("You have downloaded all tweets from user {} .".format(user))
+            if since is not None and until is not None:
+                print("Since {} until {}".format(since, until))
+            print("No more tweets from user {} are available to be downloaded.".format(user))
+            if since is None and until is None:
+                print("Try downloading again later when user {} has posted more tweets.".format(user))
 
 
     def twitter_scraper(self):
@@ -156,11 +167,11 @@ class Twitter_Scraper():
                     os.makedirs("{}/database/twitter/keywords/{}/media".format(cwd, keyword))
                 keyword_path = "{}/database/twitter/keywords/{}".format(cwd, keyword)
                 media_path = "{}/database/twitter/keywords/{}/media".format(cwd, keyword)
-                self.download_tweets_from_keyword('@'+keyword, keyword_path, media_path)
+                self.download_tweets_from_keyword(keyword, keyword_path, media_path)
         elif choice == '2':
             for user in self.keywords_or_usernames:
                 if not os.path.isdir("{}/database/twitter/users/{}/media".format(cwd, user)):
                     os.makedirs("{}/database/twitter/users/{}/media".format(cwd, user))
                 keyword_path = "{}/database/twitter/users/{}".format(cwd, user)
                 media_path = "{}/database/twitter/users/{}/media".format(cwd, user)
-                self.download_tweets_from_user(user, keyword_path, media_path)
+                self.download_tweets_from_user('@'+user, keyword_path, media_path)

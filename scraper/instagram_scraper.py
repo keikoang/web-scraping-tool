@@ -8,9 +8,9 @@ from datetime import datetime
 
 
 class Instagram_Scraper():
-    def __init__(self, hashtags_or_users, image_number):
+    def __init__(self, hashtags_or_users, post_number):
         self.hashtags_or_users = hashtags_or_users
-        self.image_number = image_number
+        self.post_number = post_number
 
         self.since = None
         self.until = None
@@ -46,12 +46,13 @@ class Instagram_Scraper():
         caption_folder = "database/instagram/hashtags/{}/captions".format(hashtag)
 
         posts = loader.get_hashtag_posts(hashtag)
+        #get the post that is between a time period
         if self.since is not None and self.until is not None:
             posts = takewhile(lambda p: p.date > self.since, dropwhile(lambda p: p.date > self.until, posts))
 
         print("\n--- Downloading post(s) with {} hashtag ---".format(hashtag))
         for post in posts:
-            if count > self.image_number - 1:
+            if count > self.post_number - 1:
                 break
             #if only download videos
             if (not loader.download_pictures) and loader.download_videos:
@@ -67,6 +68,16 @@ class Instagram_Scraper():
                 loader.save_caption(filename=filename, mtime=post.date_local, caption=metadata_string)
                 count += 1
             time.sleep(1)  # give some time to minimize getting banned from instagram
+
+        # if the user downloaded all available posts (in certain time period)
+        print("\nDownloaded posts: {}/{}".format(count, self.post_number))
+        if count < self.post_number:
+            print("You have downloaded all posts with {} hashtag.".format(hashtag))
+            if self.since is not None and self.until is not None:
+                print("Since {} until {}".format(self.since, self.until))
+            print("No more posts with {} hashtag are available to be downloaded.".format(hashtag))
+            if self.since is None and self.until is None:
+                print("Try downloading again later when more posts are available.")
 
 
     # this function get posts that contains both hashtag X AND hashtag Y, download the contents + captions
@@ -92,7 +103,7 @@ class Instagram_Scraper():
 
         print("\n--- Downloading post(s) with {} hashtags ---".format(', '.join(two_hashtags)))
         for post in posts:
-            if count > self.image_number - 1:
+            if count > self.post_number - 1:
                 break
             # if only download videos
             if (not loader.download_pictures) and loader.download_videos:
@@ -109,6 +120,16 @@ class Instagram_Scraper():
                     count += 1
             time.sleep(1)
 
+        # if the user downloaded all available posts (in certain time period)
+        print("\nDownloaded posts: {}/{}".format(count, self.post_number))
+        if count < self.post_number:
+            print("You have downloaded all posts that contain both {} and {} hashtag.".format(two_hashtags[0], two_hashtags[1]))
+            if self.since is not None and self.until is not None:
+                print("Since {} until {}".format(self.since, self.until))
+            print("No more posts that contain {} and {} hashtag are available to be downloaded.".format(two_hashtags[0], two_hashtags[1]))
+            if self.since is None and self.until is None:
+                print("Try downloading again later when more posts are available.")
+
 
     # this function get posts from certain username, and
     def download_post_from_user(self, loader, user):
@@ -124,7 +145,7 @@ class Instagram_Scraper():
 
         print("\n--- Downloading post(s) from user {} ---".format(user))
         for post in posts:
-            if count > self.image_number - 1:
+            if count > self.post_number - 1:
                 break
 
             #if only download videos
@@ -140,6 +161,16 @@ class Instagram_Scraper():
                 loader.save_caption(filename=filename, mtime=post.date_local, caption=metadata_string)
                 count += 1
             time.sleep(1)  # give some time to minimize getting banned from instagram
+
+        # if the user downloaded all available posts (in certain time period)
+        print("\nDownloaded posts: {}/{}".format(count, self.post_number))
+        if count < self.post_number:
+            print("You have downloaded all posts from user {}.".format(user))
+            if self.since is not None and self.until is not None:
+                print("Since {} until {}".format(self.since, self.until))
+            print("No more posts from user {}.".format(user))
+            if self.since is None and self.until is None:
+                print("Try downloading again later when user {} has posted more posts.".format(user))
 
 
     def instagram_scraper(self):
